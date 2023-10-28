@@ -31,8 +31,9 @@ Wait until all pods are `Running` with
 ```
 watch kubectl get pods -n argocd
 ```
+# Configure Argo CD application
 
-# Configure Argo CD via GUI
+The configuration of the actual application can be done either via the [GUI](#configure-argo-cd-application-via-gui) or the [CLI](#configure-argo-cd-application-via-cli). For demo purposes, we anyway want to access the Argo CD web interfaces.
 
 To keep this examples as simple as possible, we will skip the setup of an `ingress` ressource and just portforward the `argocd-server` to `https://localhost:8000`.
 ```
@@ -54,7 +55,41 @@ kubectl get secret -n argocd argocd-initial-admin-secret -ojsonpath="{.data.pass
 
 Head to `https://localhost:8000` and login with `admin` and the corresponding initial password. 
 
-TODO: Finish Configuration
+## Configure Argo CD application via GUI
+
+Click on `New App` and configure the `custom-nginx` application in the `default` Argo project. 
+
+Note: Argo has a independent project structure from Kubernetes namespaces/projects.
+
+![Argo CD General](./img/argo-general.PNG)
+
+Configure the source Git repository.
+
+![Argo CD Source](./img/argo-source.PNG)
+
+Configure the cluster destination and target namespace.
+
+![Argo CD Destination](./img/argo-destination.PNG)
+
+## Configure Argo CD application via CLI
+
+To configure the Argo application apply the pre built `application.yaml`:
+```
+kubectl apply -f application.yaml
+```
+---
+
+Both configurations will lead to the application being deployed. 
+
+![Argo CD Synced Apps](./img/argo-synced-app.PNG)
+
+Clicking on the application will provide more detauls about the deployed Kubernetes resources. 
+
+![Argo CD Application Details](./img/argo-app-details.PNG)
+
+A nice feature of Argo CD is the availability of logs from pods.
+
+![Argo CD Application Logs](./img/argo-pod-logs.PNG)
 
 # Verify the functionality of the application
 
@@ -62,4 +97,23 @@ The application has a `NodePort` service on port `31234`. The `service` will be 
 Verify this with the following command
 ```
 curl http://$(minikube ip):31234
+```
+
+# Update the deployment
+
+Updating the [deployment.yaml](https://github.com/Skalador/ArgoCD-Demo/blob/main/dev/deployment.yaml) in the Git repository from
+```
+image: skalador/custom-nginx:1.0
+```
+to
+```
+image: skalador/custom-nginx:1.1
+```
+will automatically update the deployed applications.
+
+# Cleanup 
+
+Remove the local Minikube instance
+```
+minikube delete
 ```
